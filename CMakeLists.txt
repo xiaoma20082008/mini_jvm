@@ -40,6 +40,8 @@ elseif(UNIX)
     message(STATUS "This is Linux.")
 endif ()
 
+enable_testing()
+
 add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(third_party)
