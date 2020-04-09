@@ -35,3 +35,6 @@
 *bin*
 *build*
 *.iml
+
+test/*.java*
+test/*.class

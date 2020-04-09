@@ -5,27 +5,85 @@
 #ifndef MINI_JVM_COMMON_H
 #define MINI_JVM_COMMON_H
 #include <cstdint>
+#include <string>
 
 namespace jvm {
 
 // region value of data length
 
+// A class file consists of a stream of 8-bit bytes. 16-bit and 32-bit
+// quantities are constructed by reading in two and four consecutive 8-bit
+// bytes, respectively. Multibyte data items are always stored in big-endian
+// order, where the high bytes come first. This chapter defines the data types
+// u1, u2, and u4 to represent an unsigned one-, two-, or four-byte quantity,
+// respectively.
 #define u1 std::uint8_t
 #define u2 std::uint16_t
-#define u4 std::uint32_t
+#define u4 std::int32_t
 
 // endregion value of data length
 
 // region value of access flags
 
-#define ACC_PUBLIC      0x0001
-#define ACC_FINAL       0x0010
-#define ACC_SUPER       0x0020
-#define ACC_INTERFACE   0x0200
-#define ACC_ABSTRACT    0x0400
-#define ACC_SYNTHETIC   0x1000
-#define ACC_ANNOTATION  0x2000
-#define ACC_ENUM        0x4000
+// class, inner, field, method
+#define ACC_PUBLIC         0x0001
+
+//        inner, field, method
+#define ACC_PRIVATE        0x0002
+
+//        inner, field, method
+#define ACC_PROTECTED      0x0004
+
+//        inner, field, method
+#define ACC_STATIC         0x0008
+
+// class, inner, field, method
+#define ACC_FINAL          0x0010
+
+// class
+#define ACC_SUPER          0x0020
+
+//                      method
+#define ACC_SYNCHRONIZED   0x0020
+
+//               field
+#define ACC_VOLATILE       0x0040
+
+//                      method
+#define ACC_BRIDGE         0x0040
+
+//               field
+#define ACC_TRANSIENT      0x0080
+
+//                      method
+#define ACC_VARARGS        0x0080
+
+//                      method
+#define ACC_NATIVE         0x0100
+
+// class, inner
+#define ACC_INTERFACE      0x0200
+
+// class, inner,        method
+#define ACC_ABSTRACT       0x0400
+
+//                      method
+#define ACC_STRICT         0x0800
+
+// class, inner, field, method
+#define ACC_SYNTHETIC      0x1000
+
+// class, inner
+#define ACC_ANNOTATION     0x2000
+
+// class, inner, field
+#define ACC_ENUM           0x4000
+
+//                          method parameter
+#define ACC_MANDATED       0x8000
+
+// class
+#define ACC_MODULE         0x8000
 
 // endregion value of access flags
 
@@ -64,6 +122,51 @@ namespace jvm {
 #define REF_invokeInterface   9
 
 // endregion MethodHandle type
+
+
+// region Attribute
+
+#define AnnotationDefault         "AnnotationDefault"
+#define BootstrapMethods          "BootstrapMethods"
+#define CharacterRangeTable       "CharacterRangeTable"
+#define Code                      "Code"
+#define ConstantValue             "ConstantValue"
+#define CompilationID             "CompilationID"
+#define Deprecated                "Deprecated"
+#define EnclosingMethod           "EnclosingMethod"
+#define Exceptions                "Exceptions"
+#define InnerClasses              "InnerClasses"
+#define LineNumberTable           "LineNumberTable"
+#define LocalVariableTable        "LocalVariableTable"
+#define LocalVariableTypeTable    "LocalVariableTypeTable"
+#define MethodParameters          "MethodParameters"
+#define Module                    "Module"
+#define ModuleHashes              "ModuleHashes"
+#define ModuleMainClass           "ModuleMainClass"
+#define ModulePackages            "ModulePackages"
+#define ModuleResolution          "ModuleResolution"
+#define ModuleTarget              "ModuleTarget"
+#define NestHost                  "NestHost"
+#define NestMembers               "NestMembers"
+#define Record                    "Record"
+#define RuntimeVisibleAnnotations             "RuntimeVisibleAnnotations"
+#define RuntimeInvisibleAnnotations           "RuntimeInvisibleAnnotations"
+#define RuntimeVisibleParameterAnnotations    "RuntimeVisibleParameterAnnotations"
+#define RuntimeInvisibleParameterAnnotations  "RuntimeInvisibleParameterAnnotations"
+#define RuntimeVisibleTypeAnnotations         "RuntimeVisibleTypeAnnotations"
+#define RuntimeInvisibleTypeAnnotations       "RuntimeInvisibleTypeAnnotations"
+#define Signature                 "Signature"
+#define SourceDebugExtension      "SourceDebugExtension"
+#define SourceFile                "SourceFile"
+#define SourceID                  "SourceID"
+#define StackMap                  "StackMap"
+#define StackMapTable             "StackMapTable"
+#define Synthetic                 "Synthetic"
+
+// endregion Attribute
+
+std::wstring Utf8ToWstring(const std::string &str);
+std::string WstringToUtf8(const std::wstring &str);
 
 } // namespace jvm
 #endif // MINI_JVM_COMMON_H
