@@ -3,6 +3,8 @@
 //
 
 #include "ClassReader.h"
+#include "Attribute.h"
+#include "ClassFile.h"
 #include "Exception.h"
 namespace jvm {
 
@@ -14,6 +16,14 @@ ClassReader::ClassReader(const char *file_, AttributeFactory *factory_) {
     msg.append(file_);
     throw IOException(msg);
   }
+
+#ifdef PRINT_DEBUG
+  in.seekg(0, std::ios::end);
+  auto len = in.tellg();
+  file_size = len;
+
+  in.seekg(0, std::ios::beg);
+#endif
 
   factory = factory_;
 }
@@ -52,8 +62,11 @@ u2 ClassReader::ReadUInt2() {
 }
 
 u1 ClassReader::ReadUInt1() {
-  u1 ch;
+  u1 ch = 0;
   in.read(reinterpret_cast<char *>(&ch), sizeof(u1));
+#ifdef PRINT_DEBUG
+  index++;
+#endif
   return ch;
 }
 
@@ -67,5 +80,7 @@ std::string ClassReader::ReadUTF() {
 Attribute *ClassReader::ReadAttribute() {
   return factory->CreateAttribute(this);
 }
+
+ClassFile *ClassReader::GetClassFile() { return factory->class_file; }
 
 } // namespace jvm

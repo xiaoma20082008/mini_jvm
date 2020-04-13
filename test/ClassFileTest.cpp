@@ -2,14 +2,18 @@
 // Created by machunxiao on 2020/4/8.
 //
 #include "ClassFile.h"
+#include "TestConfig.h"
 #include <gtest/gtest.h>
 #include <iostream>
 
-TEST(class_file, hello_world) {
-  const char *path = "/Users/machunxiao/workspace/research/jvm/test/Main.class";
+TEST(class_file, parse) {
+  std::string s;
+  s.append(PATH_PREFIX);
+  s.append("/Main.class");
+  const char *path = s.c_str();
   try {
     jvm::ClassFile cf(path);
-
+    std::cout << cf.ToString() << std::endl;
   } catch (const std::exception &e) {
     std::cout << "failed:" << e.what() << std::endl;
   }

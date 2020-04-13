@@ -18,8 +18,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # 编译参数
-set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} -std=c++20 -o0 -Werror -g2 -glldb")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -std=c++20 -o3 -Werror")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -std=c++17 -o0 -Werror -g2 -glldb")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -std=c++17 -o3 -Werror")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
@@ -33,11 +33,13 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include/jvm")
 # 是否构建静态库
 option(BUILD_JVM_STATIC "Build the libjvm static libraries" ON)
 
+option(DEBUG "Print debug messages" ON)
+
 if (WIN32)
     message(STATUS "This is Windows.")
-elseif(APPLE)
+elseif (APPLE)
     message(STATUS "This is MacOS.")
-elseif(UNIX)
+elseif (UNIX)
     message(STATUS "This is Linux.")
 endif ()
 
@@ -47,8 +49,10 @@ add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(third_party)
 
-add_executable(mini_jvm main.cpp)
+add_executable(mini_java mini_java.cpp)
+add_executable(mini_javap mini_javap.cpp)
 
 target_include_directories(jvm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/jvm")
 
-target_link_libraries(mini_jvm jvm)
+target_link_libraries(mini_java jvm)
+target_link_libraries(mini_javap jvm)

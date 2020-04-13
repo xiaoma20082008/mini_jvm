@@ -8,6 +8,7 @@
 #include "Common.h"
 #include <vector>
 namespace jvm {
+class ConstantPool;
 class Field {
 public:
   Field(ClassReader *reader);
@@ -15,11 +16,13 @@ public:
         Attributes *attributes);
   ~Field();
 
+  std::string GetName(ConstantPool *pool);
+
 public:
-  u2 access_flags;
-  u2 name_index;
-  u2 descriptor_index;
-  Attributes *attributes;
+  u2 access_flags = 0;
+  u2 name_index = 0;
+  u2 descriptor_index = 0;
+  Attributes *attributes = nullptr;
 };
 } // namespace jvm
 #endif // MINI_JVM_FIELD_H

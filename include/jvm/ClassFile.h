@@ -11,7 +11,7 @@
 #include "Method.h"
 
 namespace jvm {
-
+class AccessFlags;
 class ClassFile {
 public:
   ClassFile(const char *file_);
@@ -21,26 +21,30 @@ public:
             u2 fields_count_, Field **fields_, u2 methods_count_,
             Method **methods_, Attributes *attributes);
   ~ClassFile();
+  std::string ToString();
+  bool IsClass();
+  bool IsInterface();
+
 
 public:
-  u4 magic;
-  u2 minor_version;
-  u2 major_version;
-  ConstantPool *constant_pool;
-  u2 access_flags;
-  u2 this_class;
-  u2 super_class;
-  u2 interfaces_count;
-  u2 *interfaces;
-  u2 fields_count;
-  Field **fields;
-  u2 methods_count;
-  Method **methods;
-  Attributes *attributes;
+  u4 magic = 0;
+  u2 minor_version = 0;
+  u2 major_version = 0;
+  ConstantPool *constant_pool = nullptr;
+  AccessFlags *access_flags = nullptr;
+  u2 this_class = 0;
+  u2 super_class = 0;
+  u2 interfaces_count = 0;
+  u2 *interfaces = nullptr;
+  u2 fields_count = 0;
+  std::vector<Field *> fields;
+  u2 methods_count = 0;
+  std::vector<Method *> methods;
+  Attributes *attributes = nullptr;
 
 private:
-  ClassReader *reader;
-  const char *file;
+  ClassReader *reader = nullptr;
+  const char *file = nullptr;
 };
 
 } // namespace jvm

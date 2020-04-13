@@ -38,3 +38,4 @@
 
 test/*.java*
 test/*.class
+test/*.h

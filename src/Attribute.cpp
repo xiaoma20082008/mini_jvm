@@ -3,8 +3,9 @@
 //
 #include "Attribute.h"
 #include "ClassReader.h"
+#include "ConstantPool.h"
 #include "Exception.h"
-
+#include <ClassFile.h>
 namespace jvm {
 
 // region attribute
@@ -17,7 +18,9 @@ u4 Attribute::Length() { return attribute_length + 6; }
 Attribute *Attribute::Read(ClassReader *reader) {
   return reader->ReadAttribute();
 }
-
+std::string Attribute::GetName(ConstantPool *pool) {
+  return pool->GetUTF8Value(attribute_name_index);
+}
 // region jvm attribute
 
 ConstantValue_attribute::ConstantValue_attribute(ClassReader *reader_,
@@ -44,6 +47,7 @@ Code_attribute::Code_attribute(ClassReader *reader_, u2 index_, u4 length_)
   max_locals = reader_->ReadUInt2();
   code_length = reader_->ReadInt4();
   code = new u1[code_length];
+  reader_->ReadFully(code, 0, code_length);
   exception_table_length = reader_->ReadUInt2();
   exception_tables = new exception_data *[exception_table_length];
   for (int i = 0; i < exception_table_length; i++) {
@@ -448,6 +452,10 @@ SourceFile_attribute::SourceFile_attribute(jvm::ClassReader *reader_, u2 index_,
   sourcefile_index = reader_->ReadUInt2();
 }
 
+std::string SourceFile_attribute::GetSourceFile(ConstantPool *pool) {
+  return pool->GetUTF8Value(sourcefile_index);
+}
+
 template <typename R, typename D>
 R SourceFile_attribute::Accept(AttributeVisitor<R, D> *v, D *data) {
   return v->Visit(this, data);
@@ -729,18 +737,20 @@ Attribute *AttributeFactory::CreateAttribute(ClassReader *reader) {
   case 25:
     return new RuntimeInvisibleAnnotations_attribute(reader, name_index,
                                                      length);
-//  case 26:
-//    return new RuntimeVisibleParameterAnnotations_attribute(reader, name_index,
-//                                                            length);
-//  case 27:
-//    return new RuntimeInvisibleParameterAnnotations_attribute(
-//        reader, name_index, length);
-//  case 28:
-//    return new RuntimeVisibleTypeAnnotations_attribute(reader, name_index,
-//                                                       length);
-//  case 29:
-//    return new RuntimeInvisibleTypeAnnotations_attribute(reader, name_index,
-//                                                         length);
+    //  case 26:
+    //    return new RuntimeVisibleParameterAnnotations_attribute(reader,
+    //    name_index,
+    //                                                            length);
+    //  case 27:
+    //    return new RuntimeInvisibleParameterAnnotations_attribute(
+    //        reader, name_index, length);
+    //  case 28:
+    //    return new RuntimeVisibleTypeAnnotations_attribute(reader, name_index,
+    //                                                       length);
+    //  case 29:
+    //    return new RuntimeInvisibleTypeAnnotations_attribute(reader,
+    //    name_index,
+    //                                                         length);
   case 30:
     return new Signature_attribute(reader, name_index, length);
   case 31:
@@ -806,23 +816,40 @@ void AttributeFactory::Init() {
 
 Attributes::Attributes(ClassReader *reader) {
   attributes_count = reader->ReadUInt2();
-  attributes = new Attribute *[attributes_count];
+  attributes.reserve(attributes_count);
+  auto cp = reader->GetClassFile()->constant_pool;
   for (u2 i = 0; i < attributes_count; ++i) {
-    attributes[i] = reader->ReadAttribute();
+    auto attr = reader->ReadAttribute();
+    attributes.push_back(attr);
+    try {
+      std::string s = cp->GetUTF8Value(attr->attribute_name_index);
+      map.insert({s, attr});
+    } catch (const ConstantPoolException &e) {
+    }
   }
 }
 Attributes::Attributes(u2 attributes_count_, Attribute **attributes_) {
   attributes_count = attributes_count_;
-  attributes = attributes_;
+  attributes.reserve(attributes_count);
+  for (u2 i = 0; i < attributes_count; ++i) {
+    auto attr = attributes_[i];
+    attributes.push_back(attr);
+  }
 }
-Attributes::~Attributes() { delete[] attributes; }
+Attributes::~Attributes() {
+  for (auto &attr : attributes) {
+    delete attr;
+  }
+  attributes.clear();
+}
 u4 Attributes::Size() { return attributes_count; }
 u4 Attributes::Length() {
   u4 len = 2;
 
   return len;
 }
-
+Attribute *Attributes::Get(const std::string &name) { return map[name]; }
+Attribute *Attributes::Get(u4 index) { return attributes[index]; }
 // endregion Attributes
 
 } // namespace jvm

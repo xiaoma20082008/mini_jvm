@@ -4,7 +4,7 @@
 #include "Field.h"
 #include "ClassReader.h"
 #include "ClassWriter.h"
-
+#include "ConstantPool.h"
 namespace jvm {
 
 Field::Field(ClassReader *reader) {
@@ -23,5 +23,7 @@ Field::Field(u2 access_flags_, u2 name_index_, u2 descriptor_index_,
 }
 
 Field::~Field() { delete attributes; }
-
+std::string Field::GetName(ConstantPool *pool) {
+  return pool->GetUTF8Value(name_index);
+}
 } // namespace jvm

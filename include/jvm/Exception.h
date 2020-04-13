@@ -62,6 +62,7 @@ public:
   [[nodiscard]] const char *what() const noexcept override {
     std::string msg;
     msg.append("unexpected entry at #");
+    msg.append(std::to_string(index));
     msg.append(" -- expected tag ");
     msg.append(std::to_string(expected_tag));
     msg.append(", found ");

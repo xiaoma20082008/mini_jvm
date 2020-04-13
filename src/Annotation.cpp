@@ -82,10 +82,15 @@ element_value_pair::~element_value_pair() { delete value; }
 Annotation::Annotation(jvm::ClassReader *reader) {
   type_index = reader->ReadUInt2();
   num_element_value_pairs = reader->ReadUInt2();
-  element_value_pairs = new element_value_pair *[num_element_value_pairs];
+  element_value_pairs.reserve(num_element_value_pairs);
   for (u2 i = 0; i < num_element_value_pairs; ++i) {
-    element_value_pairs[i] = new element_value_pair(reader);
+    element_value_pairs.push_back(new element_value_pair(reader));
   }
 }
-Annotation::~Annotation() { delete[] element_value_pairs; }
+Annotation::~Annotation() {
+  for (auto &ev : element_value_pairs) {
+    delete ev;
+  }
+  element_value_pairs.clear();
+}
 } // namespace jvm

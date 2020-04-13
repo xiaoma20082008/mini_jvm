@@ -1,6 +1,7 @@
 #ifndef MINI_JVM_ANNOTATION_H
 #define MINI_JVM_ANNOTATION_H
 #include "Common.h"
+#include <vector>
 namespace jvm {
 class ClassReader;
 
@@ -14,42 +15,42 @@ public:
 
 public:
   u4 Length();
-  u1 tag;
+  u1 tag = 0;
 };
 struct Primitive_element_value : public element_value {
 
   Primitive_element_value(ClassReader *reader_, u1 tag_);
 
 public:
-  u2 const_value_index;
+  u2 const_value_index = 0;
 };
 struct Enum_element_value : public element_value {
   Enum_element_value(ClassReader *reader_, u1 tag_);
 
 public:
-  u2 type_name_index;
-  u2 const_name_index;
+  u2 type_name_index = 0;
+  u2 const_name_index = 0;
 };
 struct Class_element_value : public element_value {
   Class_element_value(ClassReader *reader_, u1 tag_);
 
 public:
-  u2 class_info_index;
+  u2 class_info_index = 0;
 };
 struct Annotation_element_value : public element_value {
   Annotation_element_value(ClassReader *reader_, u1 tag_);
   ~Annotation_element_value();
 
 public:
-  Annotation *annotation;
+  Annotation *annotation = nullptr;
 };
 struct Array_element_value : public element_value {
   Array_element_value(ClassReader *reader_, u1 tag_);
   ~Array_element_value();
 
 public:
-  u2 num_values;
-  element_value **values;
+  u2 num_values = 0;
+  element_value **values = nullptr;
 };
 
 //
@@ -74,7 +75,7 @@ public:
 public:
   u2 type_index;
   u2 num_element_value_pairs;
-  element_value_pair **element_value_pairs;
+  std::vector<element_value_pair *> element_value_pairs;
 };
 
 } // namespace jvm

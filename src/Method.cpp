@@ -5,6 +5,7 @@
 #include "Method.h"
 #include "ClassReader.h"
 #include "ClassWriter.h"
+#include "ConstantPool.h"
 
 namespace jvm {
 
@@ -25,4 +26,7 @@ Method::Method(u2 access_flags_, u2 name_index_, u2 descriptor_index_,
 
 Method::~Method() { delete attributes; }
 
+std::string Method::GetName(ConstantPool *pool) {
+  return pool->GetUTF8Value(name_index);
+}
 } // namespace jvm

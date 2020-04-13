@@ -3,9 +3,12 @@
 //
 
 #include "ConstantPool.h"
+
 #include "ClassReader.h"
 #include "ClassWriter.h"
-
+#include <iostream>
+#include <sstream>
+#include <utility>
 namespace jvm {
 
 // region ConstantPool Info
@@ -144,6 +147,9 @@ R ConstantClassInfo::Accept(ConstantInfoVisitor<R, D> *v, D *data) {
   return v->Visit(this, data);
 }
 
+std::string ConstantClassInfo::GetName() {
+  return cp->GetUTF8Value(name_index);
+}
 // endregion ConstantClassInfo
 
 // region ConstantStringInfo
@@ -393,8 +399,9 @@ u4 CpRef::Length() { return 5; }
 ConstantPool::ConstantPool(ClassReader *reader_) {
   constant_pool_count = reader_->ReadUInt2();
   pool.reserve(constant_pool_count);
+  // notice: pool中第0个啥也不放
   pool.push_back(nullptr);
-  // notice: pool中第1个啥也不放
+  //
   for (u2 i = 1; i < constant_pool_count; ++i) {
     u1 tag = reader_->ReadUInt1();
     CpInfo *info = nullptr;
@@ -410,9 +417,11 @@ ConstantPool::ConstantPool(ClassReader *reader_) {
       break;
     case CONSTANT_Long:
       info = (new ConstantLongInfo(this, reader_, tag));
+      i++;
       break;
     case CONSTANT_Double:
       info = (new ConstantDoubleInfo(this, reader_, tag));
+      i++;
       break;
     case CONSTANT_Class:
       info = (new ConstantClassInfo(this, reader_, tag));
@@ -459,7 +468,7 @@ ConstantPool::ConstantPool(ClassReader *reader_) {
 ConstantPool::ConstantPool(u2 constant_pool_count_,
                            std::vector<CpInfo *> pool_) {
   constant_pool_count = constant_pool_count_;
-  pool = pool_;
+  pool = std::move(pool_);
 }
 ConstantPool::~ConstantPool() {
   auto iter = pool.begin();
@@ -478,12 +487,12 @@ u4 ConstantPool::Length() {
   }
   return length;
 }
-u4 ConstantPool::GetUTF8Index(std::string value_) {
+u4 ConstantPool::GetUTF8Index(const std::string &value_) {
   for (int i = 0; i < constant_pool_count; ++i) {
     CpInfo *info = pool[i];
     if (info->GetTag() == CONSTANT_Utf8) {
       auto *utf8Info = dynamic_cast<ConstantUtf8Info *>(info);
-      if (utf8Info->value == value_) {
+      if (utf8Info != nullptr && utf8Info->value == value_) {
         return i;
       }
     }
@@ -505,7 +514,7 @@ CpInfo *ConstantPool::Get(u4 index) {
 }
 CpInfo *ConstantPool::Get(u4 index, u1 expected_type) {
   auto info = Get(index);
-  if (info->GetTag() != expected_type) {
+  if (info == nullptr || info->GetTag() != expected_type) {
     throw UnexpectedEntry(index, expected_type, info->GetTag());
   }
   return info;

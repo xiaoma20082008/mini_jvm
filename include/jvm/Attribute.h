@@ -16,6 +16,7 @@ class ClassReader;
 class ClassWriter;
 class ClassFile;
 class Attributes;
+class ConstantPool;
 template <typename R, typename P> class AttributeVisitor;
 /**
  * total = 6 + 9 + 13 = 28
@@ -64,6 +65,7 @@ struct Attribute {
 public:
   Attribute(u2 index_, u4 length_);
   u4 Length();
+  std::string GetName(ConstantPool *pool);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
@@ -71,8 +73,8 @@ public:
   static Attribute *Read(ClassReader *reader_);
 
 public:
-  u2 attribute_name_index;
-  u4 attribute_length;
+  u2 attribute_name_index = 0;
+  u4 attribute_length = 0;
 };
 
 // region jvm attribute
@@ -87,25 +89,25 @@ struct ConstantValue_attribute : public Attribute {
 struct Code_attribute : public Attribute {
   struct exception_data {
     explicit exception_data(ClassReader *reader_);
-    u2 start_pc;
-    u2 end_pc;
-    u2 handler_pc;
-    u2 catch_type;
+    u2 start_pc = 0;
+    u2 end_pc = 0;
+    u2 handler_pc = 0;
+    u2 catch_type = 0;
   };
 
   Code_attribute(ClassReader *reader_, u2 index_, u4 length);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
-  u2 max_stack;
-  u2 max_locals;
-  u4 code_length;
-  u1 *code;
-  u2 exception_table_length;
+  u2 max_stack = 0;
+  u2 max_locals = 0;
+  u4 code_length = 0;
+  u1 *code = nullptr;
+  u2 exception_table_length = 0;
 
-  exception_data **exception_tables;
+  exception_data **exception_tables = nullptr;
   // u2 attributes_count;
-  Attributes *attributes;
+  Attributes *attributes = nullptr;
 };
 
 struct StackMapTable_attribute : public Attribute {
@@ -125,7 +127,7 @@ struct StackMapTable_attribute : public Attribute {
   struct verification_type_info {
     verification_type_info(u1 tag_);
     u2 Length();
-    u1 tag;
+    u1 tag = 0;
 
     static StackMapTable_attribute::verification_type_info *
     Read(ClassReader *reader_);
@@ -133,7 +135,7 @@ struct StackMapTable_attribute : public Attribute {
   struct Object_variable_info : public verification_type_info {
     Object_variable_info(ClassReader *reader_);
     u2 Length();
-    u2 cpool_index;
+    u2 cpool_index = 0;
 
   private:
     using super = verification_type_info;
@@ -141,7 +143,7 @@ struct StackMapTable_attribute : public Attribute {
   struct Uninitialized_variable_info : public verification_type_info {
     Uninitialized_variable_info(ClassReader *reader_);
     u2 Length();
-    u2 offset;
+    u2 offset = 0;
 
   private:
     using super = verification_type_info;
@@ -155,7 +157,7 @@ struct StackMapTable_attribute : public Attribute {
     virtual u1 Length() = 0;
     virtual u2 GetOffsetDelta() = 0;
     stack_map_frame(u1 frame_type_);
-    u1 frame_type;
+    u1 frame_type = 0;
   };
   struct same_frame : public stack_map_frame {
     /* 0-63 */
@@ -170,7 +172,7 @@ struct StackMapTable_attribute : public Attribute {
     u1 Length() override;
     u2 GetOffsetDelta() override;
     // 1
-    verification_type_info **stack;
+    verification_type_info **stack = nullptr;
 
   private:
     using super = stack_map_frame;
@@ -183,7 +185,7 @@ struct StackMapTable_attribute : public Attribute {
     u2 GetOffsetDelta() override;
     u2 offset_delta;
     // 1
-    verification_type_info **stack;
+    verification_type_info **stack = nullptr;
 
   private:
     using super = stack_map_frame;
@@ -193,7 +195,7 @@ struct StackMapTable_attribute : public Attribute {
     chop_frame(u1 tag_, ClassReader *reader_);
     u1 Length() override;
     u2 GetOffsetDelta() override;
-    u2 offset_delta;
+    u2 offset_delta = 0;
 
   private:
     using super = stack_map_frame;
@@ -203,7 +205,7 @@ struct StackMapTable_attribute : public Attribute {
     same_frame_extended(u1 tag_, ClassReader *reader_);
     u1 Length() override;
     u2 GetOffsetDelta() override;
-    u2 offset_delta;
+    u2 offset_delta = 0;
 
   private:
     using super = stack_map_frame;
@@ -215,7 +217,7 @@ struct StackMapTable_attribute : public Attribute {
     u1 Length() override;
     u2 GetOffsetDelta() override;
     u2 offset_delta;
-    verification_type_info **stack;
+    verification_type_info **stack = nullptr;
 
   private:
     using super = stack_map_frame;
@@ -227,11 +229,11 @@ struct StackMapTable_attribute : public Attribute {
     u1 Length() override;
     u2 GetOffsetDelta() override;
 
-    u2 offset_delta;
-    u2 number_of_locals;
-    verification_type_info **locals;
-    u2 number_of_stack_items;
-    verification_type_info **stack;
+    u2 offset_delta = 0;
+    u2 number_of_locals = 0;
+    verification_type_info **locals = nullptr;
+    u2 number_of_stack_items = 0;
+    verification_type_info **stack = 0;
 
   private:
     using super = stack_map_frame;
@@ -246,8 +248,8 @@ struct StackMapTable_attribute : public Attribute {
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
-  u2 number_of_entries;
-  stack_map_frame **entries;
+  u2 number_of_entries = 0;
+  stack_map_frame **entries = nullptr;
 
 private:
   static StackMapTable_attribute::stack_map_frame *Read(ClassReader *reader_);
@@ -255,32 +257,32 @@ private:
 
 struct BootstrapMethods_attribute : public Attribute {
   struct BootStrapMethod {
-    u2 bootstrap_method_ref;
-    u2 num_bootstrap_arguments;
-    u2 *bootstrap_arguments;
+    u2 bootstrap_method_ref = 0;
+    u2 num_bootstrap_arguments = 0;
+    u2 *bootstrap_arguments = nullptr;
     BootStrapMethod(ClassReader *reader_);
   };
   BootstrapMethods_attribute(ClassReader *reader_, u2 index_, u4 length_);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
-  u2 num_bootstrap_methods;
-  BootStrapMethod **bootstrap_methods;
+  u2 num_bootstrap_methods = 0;
+  BootStrapMethod **bootstrap_methods = nullptr;
 };
 
 struct NestHost_attribute : public Attribute {
   NestHost_attribute(ClassReader *reader_, u2 index_, u4 length_);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
-  u2 top_index;
+  u2 top_index = 0;
 };
 
 struct NestMembers_attribute : public Attribute {
   NestMembers_attribute(ClassReader *reader_, u2 index_, u4 length_);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
-  u2 member_count;
-  u2 *members_indexes;
+  u2 member_count = 0;
+  u2 *members_indexes = nullptr;
 };
 
 // endregion jvm attribute
@@ -291,8 +293,8 @@ struct EnclosingMethod_attribute : public Attribute {
   EnclosingMethod_attribute(ClassReader *reader_, u2 index_, u4 length_);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
-  u2 class_index;
-  u2 method_index;
+  u2 class_index = 0;
+  u2 method_index = 0;
 };
 
 struct Exceptions_attribute : public Attribute {
@@ -301,16 +303,16 @@ struct Exceptions_attribute : public Attribute {
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
-  u2 number_of_exceptions;
-  u2 *exception_index_table;
+  u2 number_of_exceptions = 0;
+  u2 *exception_index_table = nullptr;
 };
 
 struct InnerClasses_attribute : public Attribute {
   struct Info {
-    u2 inner_class_info_index;
-    u2 outer_class_info_index;
-    u2 inner_name_index;
-    u2 inner_class_access_flags;
+    u2 inner_class_info_index = 0;
+    u2 outer_class_info_index = 0;
+    u2 inner_name_index = 0;
+    u2 inner_class_access_flags = 0;
     explicit Info(ClassReader *reader_);
   };
   InnerClasses_attribute(ClassReader *reader_, u2 index_, u4 length_);
@@ -318,14 +320,14 @@ struct InnerClasses_attribute : public Attribute {
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
-  u2 number_of_classes;
-  Info **classes;
+  u2 number_of_classes = 0;
+  Info **classes = nullptr;
 };
 
 struct LineNumberTable_attribute : public Attribute {
   struct LineNumberInfo {
-    u2 start_pc;
-    u2 line_number;
+    u2 start_pc = 0;
+    u2 line_number = 0;
     explicit LineNumberInfo(ClassReader *reader_);
   };
   LineNumberTable_attribute(ClassReader *reader_, u2 index_, u4 length_);
@@ -333,17 +335,17 @@ struct LineNumberTable_attribute : public Attribute {
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
-  u2 line_number_table_length;
-  LineNumberInfo **line_number_table;
+  u2 line_number_table_length = 0;
+  LineNumberInfo **line_number_table = nullptr;
 };
 
 struct LocalVariableTable_attribute : public Attribute {
   struct Entry {
-    u2 start_pc;
-    u2 length;
-    u2 name_index;
-    u2 descriptor_index;
-    u2 index;
+    u2 start_pc = 0;
+    u2 length = 0;
+    u2 name_index = 0;
+    u2 descriptor_index = 0;
+    u2 index = 0;
     Entry(ClassReader *reader_);
   };
   LocalVariableTable_attribute(ClassReader *reader_, u2 index_, u4 length_);
@@ -352,17 +354,17 @@ struct LocalVariableTable_attribute : public Attribute {
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
-  u2 local_variable_table_length;
-  Entry **local_variable_table;
+  u2 local_variable_table_length = 0;
+  Entry **local_variable_table = nullptr;
 };
 
 struct LocalVariableTypeTable_attribute : public Attribute {
   struct Entry {
-    u2 start_pc;
-    u2 length;
-    u2 name_index;
-    u2 signature_index;
-    u2 index;
+    u2 start_pc = 0;
+    u2 length = 0;
+    u2 name_index = 0;
+    u2 signature_index = 0;
+    u2 index = 0;
     Entry(ClassReader *reader_);
   };
   LocalVariableTypeTable_attribute(ClassReader *reader_, u2 index_, u4 length_);
@@ -370,22 +372,23 @@ struct LocalVariableTypeTable_attribute : public Attribute {
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
-  u2 local_variable_type_table_length;
-  Entry **local_variable_type_table;
+  u2 local_variable_type_table_length = 0;
+  Entry **local_variable_type_table = nullptr;
 };
 
 struct Signature_attribute : public Attribute {
   Signature_attribute(ClassReader *reader_, u2 index_, u4 length_);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
-  u2 signature_index;
+  u2 signature_index = 0;
 };
 
 struct SourceFile_attribute : public Attribute {
   SourceFile_attribute(ClassReader *reader_, u2 index_, u4 length_);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
-  u2 sourcefile_index;
+  u2 sourcefile_index = 0;
+  std::string GetSourceFile(ConstantPool *pool);
 };
 
 struct Synthetic_attribute : public Attribute {
@@ -402,9 +405,10 @@ struct SourceDebugExtension_attribute : public Attribute {
   SourceDebugExtension_attribute(ClassReader *reader_, u2 index_, u4 length_);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
-  u4 attribute_length;
-  u1 *debug_extension;
   std::string GetValue();
+
+  u4 attribute_length = 0;
+  u1 *debug_extension = nullptr;
 };
 
 struct Deprecated_attribute : public Attribute {
@@ -416,8 +420,8 @@ struct Deprecated_attribute : public Attribute {
 struct RuntimeAnnotations_attribute : public Attribute {
   RuntimeAnnotations_attribute(ClassReader *reader_, u2 index_, u4 length_);
   ~RuntimeAnnotations_attribute();
-  u2 num_annotations;
-  Annotation **annotations;
+  u2 num_annotations = 0;
+  Annotation **annotations = nullptr;
 };
 struct RuntimeInvisibleAnnotations_attribute
     : public RuntimeAnnotations_attribute {
@@ -434,58 +438,59 @@ struct RuntimeVisibleAnnotations_attribute
   R Accept(AttributeVisitor<R, P> *v, P *data);
 };
 
-//
-//struct RuntimeParameterAnnotations_attribute : public Attribute {
-//
-//  struct Entry {
-//    u2 num_annotations;
-//    Annotation **annotations;
-//  };
-//
-//  RuntimeParameterAnnotations_attribute(ClassReader *reader_, u2 index_,
-//                                        u4 length_);
-//  ~RuntimeParameterAnnotations_attribute();
-//
-//  u1 num_parameters;
-//  Annotation **parameter_annotations;
-//};
-//
-//struct RuntimeInvisibleParameterAnnotations_attribute
-//    : public RuntimeParameterAnnotations_attribute {
-//  RuntimeInvisibleParameterAnnotations_attribute(ClassReader *reader_,
-//                                                 u2 index_, u4 length_);
-//  template <typename R, typename P>
-//  R Accept(AttributeVisitor<R, P> *v, P *data);
-//};
-//struct RuntimeVisibleParameterAnnotations_attribute
-//    : public RuntimeParameterAnnotations_attribute {
-//  RuntimeVisibleParameterAnnotations_attribute(ClassReader *reader_, u2 index_,
-//                                               u4 length_);
-//  template <typename R, typename P>
-//  R Accept(AttributeVisitor<R, P> *v, P *data);
-//};
-//
-//struct RuntimeTypeAnnotations_attribute : public Attribute {};
-//struct RuntimeInvisibleTypeAnnotations_attribute
-//    : public RuntimeTypeAnnotations_attribute {
-//  RuntimeInvisibleTypeAnnotations_attribute(ClassReader *reader_, u2 index_,
-//                                            u4 length_);
-//  template <typename R, typename P>
-//  R Accept(AttributeVisitor<R, P> *v, P *data);
-//};
-//struct RuntimeVisibleTypeAnnotations_attribute
-//    : public RuntimeTypeAnnotations_attribute {
-//  RuntimeVisibleTypeAnnotations_attribute(ClassReader *reader_, u2 index_,
-//                                          u4 length_);
-//  template <typename R, typename P>
-//  R Accept(AttributeVisitor<R, P> *v, P *data);
-//};
+/*
+struct RuntimeParameterAnnotations_attribute : public Attribute {
+
+  struct Entry {
+    u2 num_annotations;
+    Annotation **annotations;
+  };
+
+  RuntimeParameterAnnotations_attribute(ClassReader *reader_, u2 index_,
+                                        u4 length_);
+  ~RuntimeParameterAnnotations_attribute();
+
+  u1 num_parameters;
+  Annotation **parameter_annotations;
+};
+
+struct RuntimeInvisibleParameterAnnotations_attribute
+    : public RuntimeParameterAnnotations_attribute {
+  RuntimeInvisibleParameterAnnotations_attribute(ClassReader *reader_,
+                                                 u2 index_, u4 length_);
+  template <typename R, typename P>
+  R Accept(AttributeVisitor<R, P> *v, P *data);
+};
+struct RuntimeVisibleParameterAnnotations_attribute
+    : public RuntimeParameterAnnotations_attribute {
+  RuntimeVisibleParameterAnnotations_attribute(ClassReader *reader_, u2 index_,
+                                               u4 length_);
+  template <typename R, typename P>
+  R Accept(AttributeVisitor<R, P> *v, P *data);
+};
+
+struct RuntimeTypeAnnotations_attribute : public Attribute {};
+struct RuntimeInvisibleTypeAnnotations_attribute
+    : public RuntimeTypeAnnotations_attribute {
+  RuntimeInvisibleTypeAnnotations_attribute(ClassReader *reader_, u2 index_,
+                                            u4 length_);
+  template <typename R, typename P>
+  R Accept(AttributeVisitor<R, P> *v, P *data);
+};
+struct RuntimeVisibleTypeAnnotations_attribute
+    : public RuntimeTypeAnnotations_attribute {
+  RuntimeVisibleTypeAnnotations_attribute(ClassReader *reader_, u2 index_,
+                                          u4 length_);
+  template <typename R, typename P>
+  R Accept(AttributeVisitor<R, P> *v, P *data);
+};
+*/
 
 struct AnnotationDefault_attribute : public Attribute {
   AnnotationDefault_attribute(ClassReader *reader_, u2 index_, u4 length_);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
-  element_value *value;
+  element_value *value = nullptr;
 };
 
 struct MethodParameters_attribute : public Attribute {
@@ -499,37 +504,37 @@ struct MethodParameters_attribute : public Attribute {
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
-  u1 parameters_count;
-  Entry **parameters;
+  u1 parameters_count = 0;
+  Entry **parameters = nullptr;
 };
 
 struct Module_attribute : public Attribute {
   struct RequiresEntry {
-    u2 requires_index;
-    u2 requires_flags;
-    u2 requires_version_index;
+    u2 requires_index = 0;
+    u2 requires_flags = 0;
+    u2 requires_version_index = 0;
     RequiresEntry(ClassReader *reader_);
   };
   struct ExportsEntry {
-    u2 exports_index;
-    u2 exports_flags;
-    u2 exports_to_count;
-    u2 *exports_to_index;
+    u2 exports_index = 0;
+    u2 exports_flags = 0;
+    u2 exports_to_count = 0;
+    u2 *exports_to_index = nullptr;
     ExportsEntry(ClassReader *reader_);
     ~ExportsEntry();
   };
   struct OpensEntry {
-    u2 opens_index;
-    u2 opens_flags;
-    u2 opens_to_count;
-    u2 *opens_to_index;
+    u2 opens_index = 0;
+    u2 opens_flags = 0;
+    u2 opens_to_count = 0;
+    u2 *opens_to_index = nullptr;
     OpensEntry(ClassReader *reader_);
     ~OpensEntry();
   };
   struct ProvidesEntry {
-    u2 provides_index;
-    u2 provides_with_count;
-    u2 *provides_with_index;
+    u2 provides_index = 0;
+    u2 provides_with_count = 0;
+    u2 *provides_with_index = nullptr;
     ProvidesEntry(ClassReader *reader_);
     ~ProvidesEntry();
   };
@@ -538,24 +543,24 @@ struct Module_attribute : public Attribute {
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
 
-  u2 module_name_index;
-  u2 module_flags;
-  u2 module_version_index;
+  u2 module_name_index = 0;
+  u2 module_flags = 0;
+  u2 module_version_index = 0;
 
-  u2 requires_count;
-  RequiresEntry **requires_entry;
+  u2 requires_count = 0;
+  RequiresEntry **requires_entry = nullptr;
 
-  u2 exports_count;
-  ExportsEntry **exports_entry;
+  u2 exports_count = 0;
+  ExportsEntry **exports_entry = nullptr;
 
-  u2 opens_count;
-  OpensEntry **opens_entry;
+  u2 opens_count = 0;
+  OpensEntry **opens_entry = nullptr;
 
-  u2 uses_count;
-  u2 *uses_index;
+  u2 uses_count = 0;
+  u2 *uses_index = nullptr;
 
-  u2 provides_count;
-  ProvidesEntry **provides_entry;
+  u2 provides_count = 0;
+  ProvidesEntry **provides_entry = nullptr;
 };
 
 struct ModulePackages_attribute : public Attribute {
@@ -563,15 +568,15 @@ struct ModulePackages_attribute : public Attribute {
   ~ModulePackages_attribute();
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
-  u2 package_count;
-  u2 *package_index;
+  u2 package_count = 0;
+  u2 *package_index = nullptr;
 };
 
 struct ModuleMainClass_attribute : public Attribute {
   ModuleMainClass_attribute(ClassReader *reader_, u2 index_, u4 length_);
   template <typename R, typename P>
   R Accept(AttributeVisitor<R, P> *v, P *data);
-  u2 main_class_index;
+  u2 main_class_index = 0;
 };
 
 /*
@@ -640,10 +645,13 @@ public:
   ~Attributes();
   u4 Size();
   u4 Length();
+  Attribute *Get(u4 index);
+  Attribute *Get(const std::string &name);
 
 public:
-  u2 attributes_count;
-  Attribute **attributes;
+  u2 attributes_count = 0;
+  std::vector<Attribute *> attributes;
+  std::unordered_map<std::string, Attribute *> map;
 };
 
 // endregion attributes
@@ -659,9 +667,11 @@ public:
 private:
   void Init();
 
+public:
+  ClassFile *class_file = nullptr;
+
 private:
-  ClassFile *class_file;
-  std::unordered_map<std::string, u1> attribute_table;
+  std::unordered_map<std::string, u2> attribute_table;
 };
 
 // endregion attribute

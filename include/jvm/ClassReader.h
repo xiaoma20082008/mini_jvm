@@ -5,11 +5,13 @@
 #ifndef MINI_JVM_CLASSREADER_H
 #define MINI_JVM_CLASSREADER_H
 
-#include "Attribute.h"
-#include "ClassFile.h"
+#include "AccessFlags.h"
 #include "Common.h"
 #include <fstream>
+
 namespace jvm {
+class Attribute;
+class AttributeFactory;
 class ClassFile;
 class ClassReader {
 public:
@@ -22,6 +24,13 @@ public:
   void ReadFully(u1 *data_, u4 offset_, u4 length_);
   [[nodiscard]] std::string ReadUTF();
   [[nodiscard]] Attribute *ReadAttribute();
+  ClassFile *GetClassFile();
+
+#ifdef PRINT_DEBUG
+public:
+  u4 file_size = 0;
+  u4 index = 0;
+#endif
 
 private:
   AttributeFactory *factory = nullptr;
