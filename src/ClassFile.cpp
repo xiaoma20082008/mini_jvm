@@ -5,6 +5,7 @@
 #include "ClassReader.h"
 #include "ClassWriter.h"
 #include <iostream>
+#include <regex>
 #include <sstream>
 namespace jvm {
 using namespace std;
@@ -57,7 +58,7 @@ ClassFile::ClassFile(const char *file_) {
   cout << "minor_version        : " << minor_version << endl;
   cout << "major_version        : " << major_version << endl;
   cout << "constant_pool_count  : " << constant_pool->Size() << endl;
-  cout << "access_flags         : " << access_flags.flags << endl;
+  cout << "access_flags         : " << access_flags->flags << endl;
   cout << "this_class           : " << this_class << endl;
   cout << "super_class          : " << super_class << endl;
   cout << "interfaces_count     : " << interfaces_count << endl;
@@ -65,7 +66,7 @@ ClassFile::ClassFile(const char *file_) {
   for (auto &field : fields) {
     std::string name = field->GetName(constant_pool);
     cout << "--field              : " << name << endl;
-    cout << "  field_access_flags : " << field->access_flags << endl;
+    cout << "  field_access_flags : " << field->access_flags->flags << endl;
     cout << "  field_name_index   : " << field->name_index << endl;
     cout << "  field_desc_index   : " << field->descriptor_index << endl;
     for (auto &attr : field->attributes->attributes) {
@@ -76,7 +77,7 @@ ClassFile::ClassFile(const char *file_) {
   for (auto &method : methods) {
     std::string name = method->GetName(constant_pool);
     cout << "--method             : " << name << endl;
-    cout << "  method_access_flags: " << method->access_flags << endl;
+    cout << "  method_access_flags: " << method->access_flags->flags << endl;
     cout << "  method_name_index  : " << method->name_index << endl;
     cout << "  method_desc_index  : " << method->descriptor_index << endl;
     for (auto &attr : method->attributes->attributes) {
@@ -87,6 +88,7 @@ ClassFile::ClassFile(const char *file_) {
   for (auto &attr : attributes->attributes) {
     cout << "    attr             : " << attr->GetName(constant_pool) << endl;
   }
+  cout << endl;
 #endif
 }
 
@@ -152,7 +154,10 @@ std::string ClassFile::ToString() {
   } else if (IsInterface()) {
     ss << "interface ";
   }
-  ss << constant_pool->GetClassInfo(this_class)->GetName() << endl;
+
+  ss << std::regex_replace(constant_pool->GetClassInfo(this_class)->GetName(),
+                           std::regex("/"), ".")
+     << endl;
   ss << "  minor version: " << minor_version << endl;
   ss << "  major version: " << major_version << endl;
   ss << "  flags: " << access_flags->flags << endl;

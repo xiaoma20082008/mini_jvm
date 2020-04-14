@@ -40,7 +40,7 @@ std::set<std::string> AccessFlags::GetMethodClassFlags() {
   return s;
 }
 
-bool AccessFlags::Is(u2 mask) { return false; }
+bool AccessFlags::Is(u2 mask) { return (flags & mask) != 0; }
 
 std::set<std::string> AccessFlags::GetFlags(const u2 *expect_flags,
                                             u2 expect_flags_count_,

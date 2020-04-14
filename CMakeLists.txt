@@ -52,7 +52,7 @@ add_subdirectory(third_party)
 add_executable(mini_java mini_java.cpp)
 add_executable(mini_javap mini_javap.cpp)
 
-target_include_directories(jvm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/jvm")
+target_include_directories(class_file PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/jvm")
 
-target_link_libraries(mini_java jvm)
-target_link_libraries(mini_javap jvm)
+target_link_libraries(mini_java class_file)
+target_link_libraries(mini_javap class_file)

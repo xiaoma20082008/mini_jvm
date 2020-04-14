@@ -9,6 +9,7 @@
 #include <vector>
 namespace jvm {
 class ConstantPool;
+class AccessFlags;
 class Field {
 public:
   Field(ClassReader *reader);
@@ -19,7 +20,7 @@ public:
   std::string GetName(ConstantPool *pool);
 
 public:
-  u2 access_flags = 0;
+  AccessFlags* access_flags = nullptr;
   u2 name_index = 0;
   u2 descriptor_index = 0;
   Attributes *attributes = nullptr;
