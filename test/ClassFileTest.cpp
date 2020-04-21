@@ -1,25 +1,20 @@
 //
 // Created by machunxiao on 2020/4/8.
 //
-#include "ClassFile.h"
+#include "classfile/ClassFile.h"
 #include "TestConfig.h"
+#include "classfile//ClassLoader.h"
 #include <gtest/gtest.h>
 #include <iostream>
+using namespace std;
 
-TEST(class_file, parse) {
-  std::string s;
-  s.append(PATH_PREFIX);
-  s.append("/Main.class");
-  const char *path = s.c_str();
-  try {
-    jvm::ClassFile cf(path);
-    std::cout << cf.ToString() << std::endl;
-  } catch (const std::exception &e) {
-    std::cout << "failed:" << e.what() << std::endl;
-  }
+TEST(class_file, class_loader) {
+  jvm::ClassLoader loader(PATH_PREFIX);
+  auto clazz = loader.LoadClass("Main");
+  cout << clazz << endl;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

@@ -14,7 +14,7 @@ class ConstantPoolException : public std::exception {
 
 public:
   explicit ConstantPoolException(u4 index_) : index(index_) {}
-  [[nodiscard]] const char *what() const noexcept override { return ""; }
+  [[nodiscard]] const char* what() const noexcept override { return ""; }
 
 public:
   u4 index;
@@ -26,7 +26,7 @@ public:
   InvalidEntry(u4 index_, u1 tag_) : ConstantPoolException(index_) {
     tag = tag_;
   }
-  [[nodiscard]] const char *what() const noexcept override {
+  [[nodiscard]] const char* what() const noexcept override {
     std::string msg;
     msg.append("unexpected tag at #");
     msg.append(std::to_string(index));
@@ -43,7 +43,7 @@ class InvalidIndex : public ConstantPoolException {
 
 public:
   explicit InvalidIndex(u4 index_) : ConstantPoolException(index_) {}
-  [[nodiscard]] const char *what() const noexcept override {
+  [[nodiscard]] const char* what() const noexcept override {
     std::string msg;
     msg.append("invalid index #");
     msg.append(std::to_string(index));
@@ -59,7 +59,7 @@ public:
     expected_tag = expected_tag_;
     found_tag = found_tag_;
   }
-  [[nodiscard]] const char *what() const noexcept override {
+  [[nodiscard]] const char* what() const noexcept override {
     std::string msg;
     msg.append("unexpected entry at #");
     msg.append(std::to_string(index));
@@ -78,11 +78,11 @@ public:
 class EntryNotFound : public ConstantPoolException {
 
 public:
-  explicit EntryNotFound(const std::string &value_)
+  explicit EntryNotFound(const std::string& value_)
       : ConstantPoolException(-1) {
     value = value_;
   }
-  [[nodiscard]] const char *what() const noexcept override {
+  [[nodiscard]] const char* what() const noexcept override {
     std::string msg;
     msg.append("value not found: ");
     msg.append(value);
@@ -103,12 +103,12 @@ class InvalidAnnotation : public AttrException {
 
 public:
   InvalidAnnotation() { msg = ""; }
-  explicit InvalidAnnotation(const char *msg_) { msg = msg_; }
-  explicit InvalidAnnotation(const std::string &msg_) { msg = msg_.c_str(); }
-  [[nodiscard]] const char *what() const noexcept override { return msg; }
+  explicit InvalidAnnotation(const char* msg_) { msg = msg_; }
+  explicit InvalidAnnotation(const std::string& msg_) { msg = msg_.c_str(); }
+  [[nodiscard]] const char* what() const noexcept override { return msg; }
 
 private:
-  const char *msg;
+  const char* msg;
 };
 
 // endregion AttrException
@@ -118,18 +118,18 @@ private:
 class IOException : public std::exception {
 public:
   IOException() { msg = ""; }
-  IOException(const char *msg_) { msg = msg_; }
-  IOException(const std::string &msg_) { msg = msg_.c_str(); }
-  [[nodiscard]] const char *what() const noexcept override { return msg; }
+  IOException(const char* msg_) { msg = msg_; }
+  IOException(const std::string& msg_) { msg = msg_.c_str(); }
+  [[nodiscard]] const char* what() const noexcept override { return msg; }
 
 private:
-  const char *msg;
+  const char* msg;
 };
 
 class EofException : public IOException {
 public:
   EofException() : IOException() {}
-  EofException(const char *msg_) : IOException(msg_) {}
+  EofException(const char* msg_) : IOException(msg_) {}
 };
 
 // endregion IOException
@@ -139,14 +139,14 @@ public:
 class IllegalArgumentException : public std::exception {
 public:
   IllegalArgumentException() { msg = ""; }
-  IllegalArgumentException(const char *msg_) { msg = msg_; }
-  explicit IllegalArgumentException(const std::string &msg_) {
+  IllegalArgumentException(const char* msg_) { msg = msg_; }
+  explicit IllegalArgumentException(const std::string& msg_) {
     msg = msg_.c_str();
   }
-  [[nodiscard]] const char *what() const noexcept override { return msg; }
+  [[nodiscard]] const char* what() const noexcept override { return msg; }
 
 private:
-  const char *msg;
+  const char* msg;
 };
 
 // endregion RuntimeException

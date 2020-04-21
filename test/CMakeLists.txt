@@ -8,4 +8,4 @@ configure_file(
 add_executable(class_file_test ClassFileTest.cpp)
 
 target_link_libraries(class_file_test PRIVATE gtest)
-target_link_libraries(class_file_test PRIVATE class_file)
+target_link_libraries(class_file_test PRIVATE jvm)
