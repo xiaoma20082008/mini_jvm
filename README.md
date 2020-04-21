@@ -45,5 +45,6 @@ Options:
 
 ### See Also
 
-[The Java® Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se14/html/) 
+[The Java® Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se14/html/)
+
 [HotSpot Virtual Machine Garbage Collection Tuning Guide](https://docs.oracle.com/en/java/javase/14/gctuning/preface.html)

@@ -9,6 +9,16 @@
 
 namespace jvm {
 
+#define TO_STRING() std::string ToString();
+
+#define FOR_EACH(item, length) for (auto item = 0; item < length; ++item)
+
+#define DEL_PTR_ARRAY(p, len)                                                  \
+  for (auto item = 0; item < len; ++item) {                                    \
+    delete p[item];                                                            \
+  }                                                                            \
+  delete[] p
+
 // region value of data length
 
 // A class file consists of a stream of 8-bit bytes. 16-bit and 32-bit
@@ -164,9 +174,6 @@ namespace jvm {
 #define Synthetic                 "Synthetic"
 
 // endregion Attribute
-
-std::wstring Utf8ToWstring(const std::string &str);
-std::string WstringToUtf8(const std::wstring &str);
 
 } // namespace jvm
 #endif // MINI_JVM_COMMON_H
